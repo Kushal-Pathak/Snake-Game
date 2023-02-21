@@ -2,8 +2,8 @@
 #include <windows.h>
 #include <conio.h>
 #include <ctime>
-#define h 27
-#define w 39
+#define h 15
+#define w 15
 #define maxsize ((h-2)*(w-2))
 using namespace std;
 
@@ -19,7 +19,7 @@ int food_exists = 0;
 int head = -1;
 int dir = 2;
 int score = 0;
-int  game_over = 0;
+int game_over = 0;
 
 
 void init_buffer();
@@ -34,20 +34,29 @@ void detect_collision();
 
 int main() {
 	srand((unsigned int)time(0));
-	grow_snake();
-	while (!game_over) {
-		init_buffer();
-		bind_snake();
-		generate_food();
-		render();
-		control();
-		crawl();
-		eat_food();
-		detect_collision();
-		Sleep(200);
+	char play = 'y';
+	while (play == 'y') {
+		score = 0;
+		game_over = 0;
+		head = -1;
+		grow_snake();
+		food_exists = 0;
+		while (!game_over) {
+			init_buffer();
+			bind_snake();
+			generate_food();
+			render();
+			control();
+			crawl();
+			eat_food();
+			detect_collision();
+			Sleep(300);
+		}
+		play = 'n';
+		cout << "         Game Over!"<<endl;
+		cout << "      Play again(y/n)? ";
+		cin >> play;
 	}
-	cout << " Game Over!";
-	_getch();
 	return 0;
 }
 
@@ -139,8 +148,8 @@ void init_buffer() {
 		}
 	}
 	for (int i = 0; i < h; i++) {
-		buffer[i][0] = '|';
-		buffer[i][w-1] = '|';
+		buffer[i][0] = '=';
+		buffer[i][w-1] = '=';
 	}
 	for (int i = 0; i < w; i++) {
 		buffer[0][i] = '=';
@@ -156,14 +165,14 @@ void render() {
 		}
 		cout << endl;
 	}
-	cout << "Score: " << score;
+	cout << "          Score: " << score << endl;
 }
 
 void generate_food() {
 	if (!food_exists) {
 		int x, y;
-		x = 1 + rand() % (w - 1);
-		y = 1 + rand() % (h - 1);
+		x = 1 + rand() % (w - 2);
+		y = 1 + rand() % (h - 2);
 		for (int i = 0; i <= head; i++) {
 			if (snake[i].x == x && snake[i].y == y) generate_food();
 		}
