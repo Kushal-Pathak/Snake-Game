@@ -15,9 +15,10 @@ struct cell {
 
 cell snake[max];
 cell food;
-int no_food = 1;
+int food_exists = 0;
 int head = -1;
 int dir = 2;
+int score = 0;
 
 
 void init_buffer();
@@ -27,6 +28,7 @@ void grow_snake();
 void crawl();
 void control();
 void generate_food();
+void eat_food();
 
 int main() {
 	srand(time(0));
@@ -39,10 +41,19 @@ int main() {
 		render();
 		control();
 		crawl();
+		eat_food();
 		Sleep(200);
 	}
 	_getch();
 	return 0;
+}
+
+void eat_food() {
+	if (snake[head].x == food.x && snake[head].y == food.y) {
+		food_exists = 0;
+		grow_snake();
+		score++;
+	}
 }
 
 void control() {
@@ -130,10 +141,11 @@ void render() {
 		}
 		cout << endl;
 	}
+	cout << "Score: " << score;
 }
 
 void generate_food() {
-	if (no_food) {
+	if (!food_exists) {
 		int x, y;
 		x = 1 + rand() % (w - 1);
 		y = 1 + rand() % (h - 1);
@@ -142,7 +154,7 @@ void generate_food() {
 		}
 		food.x = x;
 		food.y = y;
-		no_food = 0;
+		food_exists = 1;
 	}
 	buffer[food.y][food.x] = 'O';
 }
