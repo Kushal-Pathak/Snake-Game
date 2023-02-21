@@ -1,4 +1,5 @@
 #include <iostream>
+#include <windows.h>
 #include <conio.h>
 #define h 27
 #define w 39
@@ -20,14 +21,37 @@ void init_buffer();
 void render();
 void bind_snake();
 void grow_snake();
+void crawl();
 
 int main() {
-	init_buffer();
-	grow_snake(); grow_snake(); dir = 3; grow_snake(); grow_snake();
-	bind_snake();
-	render();
+	grow_snake(); grow_snake(); dir = 3; grow_snake(); grow_snake(); dir = 2; grow_snake(); grow_snake();
+	dir = 1; grow_snake(); grow_snake(); grow_snake(); grow_snake(); dir = 2; grow_snake(); grow_snake();
+	
+	while (1) {
+		init_buffer();
+		bind_snake();
+		render();
+		crawl();
+		Sleep(500);
+	}
 	_getch();
 	return 0;
+}
+
+void crawl() {
+	int dx = 0, dy = 0;
+	for (int i = 0; i < head; i++) {
+		snake[i].x = snake[i + 1].x;
+		snake[i].y = snake[i + 1].y;
+	}
+	switch (dir) {
+	case 1: dy = -1; break;
+	case 2: dx = 1; break;
+	case 3: dy = 1; break;
+	case 4: dx = -1; break;
+	}
+	snake[head].x += dx;
+	snake[head].y += dy;
 }
 
 void grow_snake() {
@@ -74,6 +98,7 @@ void init_buffer() {
 }
 
 void render() {
+	system("cls");
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
 			cout << buffer[i][j]<<' ';
