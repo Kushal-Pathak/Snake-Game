@@ -4,7 +4,7 @@
 #include <ctime>
 #define h 27
 #define w 39
-#define max (h-2)*(w-2)
+#define maxsize ((h-2)*(w-2))
 using namespace std;
 
 char buffer[h][w];
@@ -13,12 +13,13 @@ struct cell {
 	int x, y;
 };
 
-cell snake[max];
+cell snake[maxsize];
 cell food;
 int food_exists = 0;
 int head = -1;
 int dir = 2;
 int score = 0;
+int  game_over = 0;
 
 
 void init_buffer();
@@ -29,12 +30,12 @@ void crawl();
 void control();
 void generate_food();
 void eat_food();
+void detect_collision();
 
 int main() {
-	srand(time(0));
-	grow_snake(); grow_snake(); dir = 3; grow_snake(); grow_snake(); dir = 2; grow_snake(); grow_snake();
-	dir = 1; grow_snake(); grow_snake(); grow_snake(); grow_snake(); dir = 2; grow_snake(); grow_snake();
-	while (1) {
+	srand((unsigned int)time(0));
+	grow_snake();
+	while (!game_over) {
 		init_buffer();
 		bind_snake();
 		generate_food();
@@ -42,10 +43,24 @@ int main() {
 		control();
 		crawl();
 		eat_food();
+		detect_collision();
 		Sleep(200);
 	}
+	cout << " Game Over!";
 	_getch();
 	return 0;
+}
+
+void detect_collision() {
+	if (snake[head].x >= w - 1 || snake[head].x <= 0) {
+		game_over = 1;
+	}
+	if (snake[head].y >= h - 1 || snake[head].y <= 0) {
+		game_over = 1;
+	}
+	for (int i = 0; i < head; i++) {
+		if (snake[i].x == snake[head].x && snake[i].y == snake[head].y) game_over = 1;
+	}
 }
 
 void eat_food() {
