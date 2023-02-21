@@ -1,6 +1,7 @@
 #include <iostream>
 #include <windows.h>
 #include <conio.h>
+#include <ctime>
 #define h 27
 #define w 39
 #define max (h-2)*(w-2)
@@ -13,6 +14,8 @@ struct cell {
 };
 
 cell snake[max];
+cell food;
+int no_food = 1;
 int head = -1;
 int dir = 2;
 
@@ -23,13 +26,16 @@ void bind_snake();
 void grow_snake();
 void crawl();
 void control();
+void generate_food();
 
 int main() {
+	srand(time(0));
 	grow_snake(); grow_snake(); dir = 3; grow_snake(); grow_snake(); dir = 2; grow_snake(); grow_snake();
 	dir = 1; grow_snake(); grow_snake(); grow_snake(); grow_snake(); dir = 2; grow_snake(); grow_snake();
 	while (1) {
 		init_buffer();
 		bind_snake();
+		generate_food();
 		render();
 		control();
 		crawl();
@@ -42,15 +48,16 @@ int main() {
 void control() {
 	if (_kbhit()) {
 		char c = _getch();
-		switch (c) {
-			if (dir == 1 || dir == 3) {
-		case 'a': dir = 4;  break; // left
-		case 'd': dir = 2; break; // right
+		if (dir == 1 || dir == 3) {
+			switch (c) {
+			case 'a': dir = 4;  break; // left
+			case 'd': dir = 2; break; // right
 			}
-
-			if (dir == 4 || dir == 2) {
-		case 'w': dir = 1; break; // up
-		case 's': dir = 3; break; // down
+		}
+		if (dir == 4 || dir == 2) {
+			switch(c){
+			case 'w': dir = 1; break; // up
+			case 's': dir = 3; break; // down
 			}
 		}
 	}
@@ -123,4 +130,19 @@ void render() {
 		}
 		cout << endl;
 	}
+}
+
+void generate_food() {
+	if (no_food) {
+		int x, y;
+		x = 1 + rand() % (w - 1);
+		y = 1 + rand() % (h - 1);
+		for (int i = 0; i <= head; i++) {
+			if (snake[i].x == x && snake[i].y == y) generate_food();
+		}
+		food.x = x;
+		food.y = y;
+		no_food = 0;
+	}
+	buffer[food.y][food.x] = 'O';
 }
