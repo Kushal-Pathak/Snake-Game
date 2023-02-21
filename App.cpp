@@ -2,8 +2,8 @@
 #include <windows.h>
 #include <conio.h>
 #include <ctime>
-#define h 15
-#define w 15
+#define h 20
+#define w 20
 #define maxsize ((h-2)*(w-2))
 using namespace std;
 
@@ -35,7 +35,12 @@ void detect_collision();
 int main() {
 	srand((unsigned int)time(0));
 	char play = 'y';
+	cout << "Use the following key to control the snake: " << endl;
+	cout << "w: Up\ns: Down\na: Left\nd: Right" << endl;
+	cout << "Press any key to start the game...";
+	_getch();
 	while (play == 'y') {
+		dir = 2;
 		score = 0;
 		game_over = 0;
 		head = -1;
@@ -50,11 +55,11 @@ int main() {
 			crawl();
 			eat_food();
 			detect_collision();
-			Sleep(300);
+			Sleep(50);
 		}
 		play = 'n';
-		cout << "         Game Over!"<<endl;
-		cout << "      Play again(y/n)? ";
+		cout << "               Game Over!"<<endl;
+		cout << "            Play again(y/n)? ";
 		cin >> play;
 	}
 	return 0;
@@ -148,12 +153,12 @@ void init_buffer() {
 		}
 	}
 	for (int i = 0; i < h; i++) {
-		buffer[i][0] = '=';
-		buffer[i][w-1] = '=';
+		buffer[i][0] = 'H';
+		buffer[i][w-1] = 'H';
 	}
 	for (int i = 0; i < w; i++) {
-		buffer[0][i] = '=';
-		buffer[h-1][i] = '=';
+		buffer[0][i] = 'N';
+		buffer[h-1][i] = 'N';
 	}
 }
 
@@ -165,7 +170,7 @@ void render() {
 		}
 		cout << endl;
 	}
-	cout << "          Score: " << score << endl;
+	cout << "                Score: " << score << endl;
 }
 
 void generate_food() {
@@ -180,5 +185,5 @@ void generate_food() {
 		food.y = y;
 		food_exists = 1;
 	}
-	buffer[food.y][food.x] = 'O';
+	buffer[food.y][food.x] = '*';
 }
