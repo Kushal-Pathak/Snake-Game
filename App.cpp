@@ -22,20 +22,38 @@ void render();
 void bind_snake();
 void grow_snake();
 void crawl();
+void control();
 
 int main() {
 	grow_snake(); grow_snake(); dir = 3; grow_snake(); grow_snake(); dir = 2; grow_snake(); grow_snake();
 	dir = 1; grow_snake(); grow_snake(); grow_snake(); grow_snake(); dir = 2; grow_snake(); grow_snake();
-	
 	while (1) {
 		init_buffer();
 		bind_snake();
 		render();
+		control();
 		crawl();
-		Sleep(500);
+		Sleep(200);
 	}
 	_getch();
 	return 0;
+}
+
+void control() {
+	if (_kbhit()) {
+		char c = _getch();
+		switch (c) {
+			if (dir == 1 || dir == 3) {
+		case 'a': dir = 4;  break; // left
+		case 'd': dir = 2; break; // right
+			}
+
+			if (dir == 4 || dir == 2) {
+		case 'w': dir = 1; break; // up
+		case 's': dir = 3; break; // down
+			}
+		}
+	}
 }
 
 void crawl() {
