@@ -7,14 +7,13 @@
 #define maxsize ((h-2)*(w-2)) // max possible size of the snake
 using namespace std;
 
-char buffer[h][w]; // buffer to store the game screen data/pixels
-
 // structure of any location on the game screen
 // used to represent a part of snake or a food particle
 struct cell {
 	int x, y;
 };
 
+char buffer[h][w]; // buffer to store the game screen data/pixels
 cell snake[maxsize]; // an array of parts of snake
 cell food; // used to store location of food
 cell last_tail; // used to keep track of tail of snake in the last frame
@@ -23,8 +22,9 @@ int head = -1; // a pointer that points the head of snake in the snake array
 int dir = 2; // direction of snake head
 int score = 0; // used to store and accumulate the player score
 int game_over = 0; // flag to indicate if game is over or not
+char play = 'y'; // flag to indicate playing or not
 
-
+void reset_game(); // function to reset game parameters
 void init_buffer(); // fills the buffer with walls on boundary and empty space inside
 void render(); // displays the buffer on the screen
 void bind_snake(); // the location of snake parts in snake array is binded(transferred into buffer) with buffer
@@ -34,48 +34,58 @@ void control(); // this function is called every frame to handle the keyboard in
 void generate_food(); // generates a food in random location if food doesn't exists
 void eat_food(); // checks if food is eaten and then grows the snake by calling grow_snake()
 void detect_collision(); // detects collision and controls gameover mechanism
-void shift_to_right();
+void shift_cells_to_right(); // shifts all the cells of snake array to one unit right
+void home_screen_message(); // function to display home screen message
+void game_over_message(); // function to display game over message
 
 int main() {
 	srand((unsigned int)time(0));
-	char play = 'y';
-	cout << "Use the following key to control the snake: " << endl;
-	cout << "w: Up\ns: Down\na: Left\nd: Right" << endl;
-	cout << "Press any key to start the game...";
-	play = _getch();
-	play = 'y';
+	home_screen_message();
 	while (play == 'y') {
-		dir = 2;
-		score = 0;
-		game_over = 0;
-		head = -1;
-		grow_snake();
-		food_exists = 0;
+		reset_game();
 		while (!game_over) {
 			init_buffer();
 			bind_snake();
 			generate_food();
 			render();
 			control();
-			last_tail = snake[0];
 			crawl();
 			detect_collision();
 			eat_food();
-			Sleep(100);
+			Sleep(100); // loop delay in milliseconds
 		}
-		play = 'n';
-		cout << "               Game Over!"<<endl;
-		Sleep(1000);
-		cout << "            Play again(y/n)? ";
-		cin >> play;
+		game_over_message();
 	}
 	return 0;
 }
 
-void shift_to_right() {
-	for (int i = head; i >= 0; i--) {
-		snake[i + 1] = snake[i];
-	}
+void home_screen_message() {
+	cout << "Use the following key to control the snake: " << endl;
+	cout << "w: Up   s: Down   a: Left   d: Right" << endl;
+	cout << "Press any key to start the game...";
+	play = _getch();
+	play = 'y';
+}
+
+void game_over_message() {
+	play = 'n';
+	cout << "               Game Over!" << endl;
+	Sleep(1000);
+	cout << "            Play again(y/n)? ";
+	cin >> play;
+}
+
+void reset_game() {
+	game_over = 0;
+	score = 0;
+	food_exists = 0;
+	head = -1;
+	dir = 2;
+	grow_snake();
+}
+
+void shift_cells_to_right() {
+	for (int i = head; i >= 0; i--) snake[i + 1] = snake[i];
 	head++;
 }
 
@@ -87,18 +97,14 @@ void grow_snake() {
 		snake[head] = new_cell;
 	}
 	else {
-		shift_to_right();
+		shift_cells_to_right();
 		snake[0] = last_tail;
 	}
 }
 
 void detect_collision() {
-	if (snake[head].x >= w - 1 || snake[head].x <= 0) {
-		game_over = 1;
-	}
-	if (snake[head].y >= h - 1 || snake[head].y <= 0) {
-		game_over = 1;
-	}
+	if (snake[head].x >= w - 1 || snake[head].x <= 0) game_over = 1;
+	if (snake[head].y >= h - 1 || snake[head].y <= 0) game_over = 1;
 	for (int i = 0; i < head; i++) {
 		if (snake[i].x == snake[head].x && snake[i].y == snake[head].y) game_over = 1;
 	}
@@ -133,11 +139,9 @@ void control() {
 }
 
 void crawl() {
+	last_tail = snake[0];
 	int dx = 0, dy = 0;
-	for (int i = 0; i < head; i++) {
-		snake[i].x = snake[i + 1].x;
-		snake[i].y = snake[i + 1].y;
-	}
+	for (int i = 0; i < head; i++) snake[i] = snake[i+1];
 	switch (dir) {
 	case 1: dy = -1; break;
 	case 2: dx = 1; break;
@@ -157,9 +161,7 @@ void bind_snake() {
 
 void init_buffer() {
 	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) {
-			buffer[i][j] = ' ';
-		}
+		for (int j = 0; j < w; j++) buffer[i][j] = ' ';
 	}
 	for (int i = 0; i < h; i++) {
 		buffer[i][0] = 'H';
@@ -174,9 +176,7 @@ void init_buffer() {
 void render() {
 	system("cls");
 	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) {
-			cout << buffer[i][j]<<' ';
-		}
+		for (int j = 0; j < w; j++) cout << buffer[i][j]<<' ';
 		cout << endl;
 	}
 	cout << "                Score: " << score << endl;
@@ -187,9 +187,8 @@ void generate_food() {
 		int x, y;
 		x = 1 + rand() % (w - 2);
 		y = 1 + rand() % (h - 2);
-		for (int i = 0; i <= head; i++) {
+		for (int i = 0; i <= head; i++)
 			if (snake[i].x == x && snake[i].y == y) generate_food();
-		}
 		food.x = x;
 		food.y = y;
 		food_exists = 1;
