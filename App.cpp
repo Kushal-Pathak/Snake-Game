@@ -52,7 +52,7 @@ int main() {
 			crawl();
 			detect_collision();
 			eat_food();
-			Sleep(100); // loop delay in milliseconds
+			Sleep(100); // time delay in milliseconds
 		}
 		game_over_message();
 	}
@@ -67,14 +67,6 @@ void home_screen_message() {
 	play = 'y';
 }
 
-void game_over_message() {
-	play = 'n';
-	cout << "               Game Over!" << endl;
-	Sleep(1000);
-	cout << "            Play again(y/n)? ";
-	cin >> play;
-}
-
 void reset_game() {
 	game_over = 0;
 	score = 0;
@@ -84,22 +76,80 @@ void reset_game() {
 	grow_snake();
 }
 
-void shift_cells_to_right() {
-	for (int i = head; i >= 0; i--) snake[i + 1] = snake[i];
-	head++;
+void init_buffer() {
+	for (int i = 0; i < h; i++) {
+		for (int j = 0; j < w; j++) buffer[i][j] = ' ';
+	}
+	for (int i = 0; i < h; i++) {
+		buffer[i][0] = 'H';
+		buffer[i][w - 1] = 'H';
+	}
+	for (int i = 0; i < w; i++) {
+		buffer[0][i] = 'N';
+		buffer[h - 1][i] = 'N';
+	}
 }
 
-void grow_snake() {
-	cell new_cell;
-	if (head == -1) {
-		head++;
-		new_cell.x = w / 2; new_cell.y = h / 2;
-		snake[head] = new_cell;
+void bind_snake() {
+	for (int i = 0; i <= head; i++) {
+		if (snake[i].x > 0 && snake[i].x < w - 1 && snake[i].y > 0 && snake[i].y < h - 1)
+			buffer[snake[i].y][snake[i].x] = '#';
 	}
-	else {
-		shift_cells_to_right();
-		snake[0] = last_tail;
+}
+
+void generate_food() {
+	if (!food_exists) {
+		int x, y;
+		x = 1 + rand() % (w - 2);
+		y = 1 + rand() % (h - 2);
+		for (int i = 0; i <= head; i++)
+			if (snake[i].x == x && snake[i].y == y) generate_food();
+		food.x = x;
+		food.y = y;
+		food_exists = 1;
 	}
+	buffer[food.y][food.x] = '*';
+}
+
+void render() {
+	system("cls");
+	for (int i = 0; i < h; i++) {
+		for (int j = 0; j < w; j++) cout << buffer[i][j] << ' ';
+		cout << endl;
+	}
+	cout << "                Score: " << score << endl;
+}
+
+void control() {
+	if (_kbhit()) {
+		char c = _getch();
+		if (dir == 1 || dir == 3) {
+			switch (c) {
+			case 'a': dir = 4;  break; // left
+			case 'd': dir = 2; break; // right
+			}
+		}
+		if (dir == 4 || dir == 2) {
+			switch (c) {
+			case 'w': dir = 1; break; // up
+			case 's': dir = 3; break; // down
+			}
+		}
+	}
+}
+
+void crawl() {
+	last_tail = snake[0];
+	int dx = 0, dy = 0;
+	for (int i = 0; i < head; i++) snake[i] = snake[i + 1];
+	switch (dir) {
+	case 1: dy = -1; break;
+	case 2: dx = 1; break;
+	case 3: dy = 1; break;
+	case 4: dx = -1; break;
+	}
+	snake[head].x += dx;
+	snake[head].y += dy;
 }
 
 void detect_collision() {
@@ -120,78 +170,28 @@ void eat_food() {
 	}
 }
 
-void control() {
-	if (_kbhit()) {
-		char c = _getch();
-		if (dir == 1 || dir == 3) {
-			switch (c) {
-			case 'a': dir = 4;  break; // left
-			case 'd': dir = 2; break; // right
-			}
-		}
-		if (dir == 4 || dir == 2) {
-			switch(c){
-			case 'w': dir = 1; break; // up
-			case 's': dir = 3; break; // down
-			}
-		}
+void shift_cells_to_right() {
+	for (int i = head; i >= 0; i--) snake[i + 1] = snake[i];
+	head++;
+}
+
+void grow_snake() {
+	cell new_cell;
+	if (head == -1) {
+		head++;
+		new_cell.x = w / 2; new_cell.y = h / 2;
+		snake[head] = new_cell;
+	}
+	else {
+		shift_cells_to_right();
+		snake[0] = last_tail;
 	}
 }
 
-void crawl() {
-	last_tail = snake[0];
-	int dx = 0, dy = 0;
-	for (int i = 0; i < head; i++) snake[i] = snake[i+1];
-	switch (dir) {
-	case 1: dy = -1; break;
-	case 2: dx = 1; break;
-	case 3: dy = 1; break;
-	case 4: dx = -1; break;
-	}
-	snake[head].x += dx;
-	snake[head].y += dy;
-}
-
-void bind_snake() {
-	for (int i = 0; i <= head; i++) {
-		if (snake[i].x > 0 && snake[i].x < w - 1 && snake[i].y > 0 && snake[i].y < h - 1)
-		buffer[snake[i].y][snake[i].x] = '#';
-	}
-}
-
-void init_buffer() {
-	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) buffer[i][j] = ' ';
-	}
-	for (int i = 0; i < h; i++) {
-		buffer[i][0] = 'H';
-		buffer[i][w-1] = 'H';
-	}
-	for (int i = 0; i < w; i++) {
-		buffer[0][i] = 'N';
-		buffer[h-1][i] = 'N';
-	}
-}
-
-void render() {
-	system("cls");
-	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) cout << buffer[i][j]<<' ';
-		cout << endl;
-	}
-	cout << "                Score: " << score << endl;
-}
-
-void generate_food() {
-	if (!food_exists) {
-		int x, y;
-		x = 1 + rand() % (w - 2);
-		y = 1 + rand() % (h - 2);
-		for (int i = 0; i <= head; i++)
-			if (snake[i].x == x && snake[i].y == y) generate_food();
-		food.x = x;
-		food.y = y;
-		food_exists = 1;
-	}
-	buffer[food.y][food.x] = '*';
+void game_over_message() {
+	play = 'n';
+	cout << "               Game Over!" << endl;
+	Sleep(1000);
+	cout << "            Play again(y/n)? ";
+	cin >> play;
 }
